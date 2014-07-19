@@ -1,5 +1,6 @@
 package nodza.com.sunshine.app;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.TextView;
 
 import nodza.com.sunshine.app.R;
 
@@ -57,7 +59,14 @@ public class DetailActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
+            Intent intent = getActivity().getIntent();
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+
+            if (intent != null && intent.hasExtra(intent.EXTRA_TEXT)) {
+                String forecastStr = intent.getStringExtra(Intent.EXTRA_TEXT);
+                ((TextView) rootView.findViewById(R.id.detail_text)).setText(forecastStr);
+            }
+
             return rootView;
         }
     }
