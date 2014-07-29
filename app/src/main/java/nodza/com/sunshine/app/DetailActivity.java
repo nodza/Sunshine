@@ -108,5 +108,3 @@ public class DetailActivity extends ActionBarActivity {
         }
     }
 }
-
-// https://github.com/udacity/Sunshine/blob/4.01-life-cycle-logging/app/src/main/java/com/example/android/sunshine/app/DetailActivity.java
