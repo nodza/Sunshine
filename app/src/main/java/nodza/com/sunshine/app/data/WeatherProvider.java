@@ -19,6 +19,7 @@ public class WeatherProvider extends ContentProvider {
 
     // The URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
+    private WeatherDbHelper mOpenHelper;
 
     private static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -36,7 +37,10 @@ public class WeatherProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        return false;
+
+        mOpenHelper = new WeatherDbHelper(getContext());
+
+        return true;
     }
 
     @Override
