@@ -31,7 +31,7 @@ public class TestProvider extends AndroidTestCase {
         WeatherDbHelper dbHelper = new WeatherDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        ContentValues testValues = createNorthPoleLocationValues();
+        ContentValues testValues = TestDb.createNorthPoleLocationValues();
 
         long locationRowId;
         locationRowId = db.insert(LocationEntry.TABLE_NAME, null, testValues);
@@ -54,10 +54,10 @@ public class TestProvider extends AndroidTestCase {
                 null // sort order
         );
 
-        validateCursor(cursor, testValues);
+        TestDb.validateCursor(cursor, testValues);
 
         // Fantastic.  Now that we have a location, add some weather!
-        ContentValues weatherValues = createWeatherValues(locationRowId);
+        ContentValues weatherValues = TestDb.createWeatherValues(locationRowId);
 
         long weatherRowId = db.insert(WeatherEntry.TABLE_NAME, null, weatherValues);
         assertTrue(weatherRowId != -1);
@@ -73,50 +73,40 @@ public class TestProvider extends AndroidTestCase {
                 null  // sort order
         );
 
-        validateCursor(weatherCursor, weatherValues);
+        TestDb.validateCursor(weatherCursor, weatherValues);
 
         dbHelper.close();
     }
 
-    static ContentValues createWeatherValues(long locationRowId) {
-        ContentValues weatherValues = new ContentValues();
-        weatherValues.put(WeatherEntry.COLUMN_LOC_KEY, locationRowId);
-        weatherValues.put(WeatherEntry.COLUMN_DATETEXT, "20141205");
-        weatherValues.put(WeatherEntry.COLUMN_DEGREES, 1.1);
-        weatherValues.put(WeatherEntry.COLUMN_HUMIDITY, 1.2);
-        weatherValues.put(WeatherEntry.COLUMN_PRESSURE, 1.3);
-        weatherValues.put(WeatherEntry.COLUMN_MAX_TEMP, 75);
-        weatherValues.put(WeatherEntry.COLUMN_MIN_TEMP, 65);
-        weatherValues.put(WeatherEntry.COLUMN_SHORT_DESC, "Asteroids");
-        weatherValues.put(WeatherEntry.COLUMN_WIND_SPEED, 5.5);
-        weatherValues.put(WeatherEntry.COLUMN_WEATHER_ID, 321);
 
-        return weatherValues;
-    }
+    public void testGetType() {
+        // content://com.example.android.sunshine.app/weather/
+        String type = mContext.getContentResolver().getType(WeatherEntry.CONTENT_URI);
+        // vnd.android.cursor.dir/com.example.android.sunshine.app/weather
+        assertEquals(WeatherEntry.CONTENT_TYPE, type);
 
-    static ContentValues createNorthPoleLocationValues() {
-        // Create a new map of values, where column names are the keys
-        ContentValues testValues = new ContentValues();
-        testValues.put(LocationEntry.COLUMN_LOCATION_SETTING, "99705");
-        testValues.put(LocationEntry.COLUMN_CITY_NAME, "North Pole");
-        testValues.put(LocationEntry.COLUMN_COORD_LAT, 64.7488);
-        testValues.put(LocationEntry.COLUMN_COORD_LONG, -147.353);
+        String testLocation = "94074";
+        // content://com.example.android.sunshine.app/weather/94074
+        type = mContext.getContentResolver().getType(
+                WeatherEntry.buildWeatherLocation(testLocation));
+        // vnd.android.cursor.dir/com.example.android.sunshine.app/weather
+        assertEquals(WeatherEntry.CONTENT_TYPE, type);
 
-        return testValues;
-    }
+        String testDate = "20140612";
+        // content://com.example.android.sunshine.app/weather/94074/20140612
+        type = mContext.getContentResolver().getType(
+                WeatherEntry.buildWeatherLocationWithDate(testLocation, testDate));
+        // vnd.android.cursor.item/com.example.android.sunshine.app/weather
+        assertEquals(WeatherEntry.CONTENT_ITEM_TYPE, type);
 
-    static void validateCursor(Cursor valueCursor, ContentValues expectedValues) {
+        // content://com.example.android.sunshine.app/location/
+        type = mContext.getContentResolver().getType(LocationEntry.CONTENT_URI);
+        // vnd.android.cursor.dir/com.example.android.sunshine.app/location
+        assertEquals(LocationEntry.CONTENT_TYPE, type);
 
-        assertTrue(valueCursor.moveToFirst());
-
-        Set<Map.Entry<String, Object>> valueSet = expectedValues.valueSet();
-        for (Map.Entry<String, Object> entry : valueSet) {
-            String columnName = entry.getKey();
-            int idx = valueCursor.getColumnIndex(columnName);
-            assertFalse(idx == -1);
-            String expectedValue = entry.getValue().toString();
-            assertEquals(expectedValue, valueCursor.getString(idx));
-        }
-        valueCursor.close();
+        // content://com.example.android.sunshine.app/location/1
+        type = mContext.getContentResolver().getType(LocationEntry.buildLocationUri(1L));
+        // vnd.android.cursor.item/com.example.android.sunshine.app/location
+        assertEquals(LocationEntry.CONTENT_ITEM_TYPE, type);
     }
 }
